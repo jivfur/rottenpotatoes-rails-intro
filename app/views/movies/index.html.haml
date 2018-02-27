@@ -1,12 +1,14 @@
 -#  This file is app/views/movies/index.html.haml
+
 %h1 Ivan
 
 %table#movies
   %thead
     %tr
-      %th=link_to "Movie Title",index_path(':title')
+       
+      %th{:class=>highlight(params[:column]).values_at("title")}=link_to "Movie Title",movie_path(:title),:id => "title_header"
       %th Rating
-      %th=link_to "Release Date","www.google.com"
+      %th{:class=>highlight(params[:column]).values_at("release_date")}=link_to "Release Date",movie_path(:release_date), :id => "release_date_header"
       %th More Info
   %tbody
     - @movies.each do |movie|
