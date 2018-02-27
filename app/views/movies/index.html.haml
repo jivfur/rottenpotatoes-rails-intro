@@ -2,10 +2,16 @@
 
 %h1 Ivan
 
+= form_tag movies_path, :method => :get do
+  Include:
+  - @all_ratings.each do |rating|
+    = rating
+    = check_box_tag "ratings[#{rating}]", true,params.has_key?(:ratings)? params[:ratings][rating]: true
+  = submit_tag 'Refresh',:id => "ratings_submit"
+  
 %table#movies
   %thead
     %tr
-       
       %th{:class=>highlight(params[:column]).values_at("title")}=link_to "Movie Title",movie_path(:title),:id => "title_header"
       %th Rating
       %th{:class=>highlight(params[:column]).values_at("release_date")}=link_to "Release Date",movie_path(:release_date), :id => "release_date_header"

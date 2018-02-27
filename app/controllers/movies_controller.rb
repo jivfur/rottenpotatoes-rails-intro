@@ -12,8 +12,19 @@ class MoviesController < ApplicationController
   end
 
   def index
-    sort_column = params[:column]
-    @movies = Movie.order(sort_column)
+    @all_ratings = Movie.pluck(:rating).uniq
+    if (params.has_key?(:ratings))
+      logger.debug "It has ratings"
+      @movies = Movie.where(rating: params[:ratings].keys()).order(params[:column])
+    else
+      logger.debug "It does not ratings"
+      #l_ratings = Hash.new
+      #@all_ratings.each do |rating|
+       # l_ratings[rating]=true
+      #end  
+      #params[:ratings] = l_ratings
+      @movies = Movie.order(params[:column])
+    end
   end
 
   def new
