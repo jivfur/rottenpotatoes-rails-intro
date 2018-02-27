@@ -12,22 +12,32 @@ class MoviesController < ApplicationController
   end
 
   def index
-    logger.debug params[:ratings]
     @all_ratings = Movie.pluck(:rating).uniq
-    ratings = params[:ratings]
-    @ratings =  ratings.nil? ? @all_ratings : ratings.keys
-    if (params.has_key?(:ratings))
-      logger.debug "It has ratings"
-      @movies = Movie.where(rating: @ratings).order(params[:sort])
-    else
-      logger.debug "It does not ratings"
-      #l_ratings = Hash.new
-      #@all_ratings.each do |rating|
-       # l_ratings[rating]=true
-      #end  
-      #params[:ratings] = l_ratings
-      @movies = Movie.order(params[:sort])
+    redirect = false
+    if(params.has_key?(:ratings))
+      session[:ratings] = params[:ratings]
+    else if session.has_key?(:ratings)
+          params[:ratings] = session[:ratings]
+          redirect = true
+        else
+          params[:ratings] = Hash[@all_ratings.map {|v| [v,true]}]
+        end
     end
+    if(params.has_key?(:sort))
+      session[:sort] = params[:sort]
+    else
+      params[:sort] = session[:sort]
+      redirect = true
+    end
+    if(redirect)
+      flash[:notice]="You will be redirected"
+      redirect_to movies_path(params) and return  
+    end
+    
+    ratings = params[:ratings]
+    @sort = params[:sort]
+    @ratings =  ratings.nil? ? @all_ratings : ratings.keys
+    @movies = Movie.where(rating: @ratings).order(@sort)
   end
 
   def new
