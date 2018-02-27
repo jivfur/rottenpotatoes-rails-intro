@@ -12,10 +12,13 @@ class MoviesController < ApplicationController
   end
 
   def index
+    logger.debug params[:ratings]
     @all_ratings = Movie.pluck(:rating).uniq
+    ratings = params[:ratings]
+    @ratings =  ratings.nil? ? @all_ratings : ratings.keys
     if (params.has_key?(:ratings))
       logger.debug "It has ratings"
-      @movies = Movie.where(rating: params[:ratings].keys()).order(params[:column])
+      @movies = Movie.where(rating: @ratings).order(params[:sort])
     else
       logger.debug "It does not ratings"
       #l_ratings = Hash.new
@@ -23,7 +26,7 @@ class MoviesController < ApplicationController
        # l_ratings[rating]=true
       #end  
       #params[:ratings] = l_ratings
-      @movies = Movie.order(params[:column])
+      @movies = Movie.order(params[:sort])
     end
   end
 
