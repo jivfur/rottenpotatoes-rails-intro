@@ -13,31 +13,55 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.pluck(:rating).uniq
-    redirect = false
-    if(params.has_key?(:ratings))
-      session[:ratings] = params[:ratings]
-    else if session.has_key?(:ratings)
-          params[:ratings] = session[:ratings]
-          redirect = true
-        else
-          params[:ratings] = Hash[@all_ratings.map {|v| [v,true]}]
-        end
-    end
-    if(params.has_key?(:sort))
-      session[:sort] = params[:sort]
-    else
-      params[:sort] = session[:sort]
-      redirect = true
-    end
-    if(redirect)
-      flash[:notice]="You will be redirected"
-      redirect_to movies_path(params) and return  
+    
+    @ratings = params[:ratings] if params.has_key?(:ratings)
+    @sort = params[:sort] if params.has_key?(:sort)
+    
+    if params.has_key?('commit')
+      session.delete(:ratings)
+      session.delete(:sort)
     end
     
-    ratings = params[:ratings]
-    @sort = params[:sort]
-    @ratings =  ratings.nil? ? @all_ratings : ratings.keys
-    @movies = Movie.where(rating: @ratings).order(@sort)
+    #update session if need 
+    session[:ratings] = @ratings if !@ratings.nil?
+    session[:sort] = @sort if @sort
+    
+    #do we need to redirect?
+    if !@ratings && session[:ratings]
+      @ratings = session[:ratings] unless @ratings
+      @sort = session[:sort] unless @sort
+      flash.keep
+      redirect_to movies_path({sort: @sort, ratings: @ratings})
+    end
+    
+    # redirect = false
+    # if(params.has_key?(:ratings))
+    #   session[:ratings] = params[:ratings]
+    # else 
+    #     redirect = true
+    #     if session.has_key?(:ratings)
+    #       params[:ratings] = session[:ratings]
+    #       redirect = true
+    #     else
+    #       local_ratings = Hash[@all_ratings.map {|v| [v,true]}] #No rating selected
+    #       logger.debug local_ratings
+    #     end
+    # end
+    # #if(params.has_key?(:sort))
+    # #  session[:sort] = params[:sort]
+    # #else
+    # #  params[:sort] = session[:sort]
+    # #  redirect = true
+    # #end
+    # if(redirect)
+    #   flash[:notice]="You did not select any rating"
+    #   redirect_to movies_path(sort: params[:sort], ratings: {"G"=>true}) and return  
+    # end
+    #ratings = params[:ratings]
+    #@sort = params[:sort]
+    logger.debug @ratings
+    local_ratings =  @ratings.nil? ? @all_ratings : @ratings.keys
+    @movies = Movie.where(rating: local_ratings).order(@sort)
   end
 
   def new
